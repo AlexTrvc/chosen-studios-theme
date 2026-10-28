@@ -1,0 +1,91 @@
+<section class="cs-statement" style="--cs-st-pt: {{ section.settings.padding_top }}px; --cs-st-pb: {{ section.settings.padding_bottom }}px;">
+  <div class="page-width cs-statement__inner">
+    {%- if section.settings.line_1 != blank or section.settings.line_2 != blank -%}
+      <p class="cs-statement__text">
+        {%- if section.settings.line_1 != blank -%}
+          <span class="cs-statement__line cs-statement__line--soft">{{ section.settings.line_1 | escape }}</span>
+        {%- endif -%}
+        {%- if section.settings.line_2 != blank -%}
+          <span class="cs-statement__line">{{ section.settings.line_2 | escape }}</span>
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+    {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+      <a class="cs-statement__button" href="{{ section.settings.button_link }}">{{ section.settings.button_label | escape }}</a>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .cs-statement {
+    padding-top: calc(var(--cs-st-pt) * 0.6);
+    padding-bottom: calc(var(--cs-st-pb) * 0.6);
+  }
+  .cs-statement__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .cs-statement__text {
+    margin: 0;
+    font-size: clamp(3rem, 5.6vw, 7.2rem);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    color: #121212;
+  }
+  .cs-statement__line {
+    display: block;
+  }
+  .cs-statement__line--soft {
+    color: #555555;
+  }
+  .cs-statement__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 5.2rem;
+    margin-top: 3.2rem;
+    padding: 0 3.2rem;
+    background: #121212;
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: opacity 0.24s ease;
+  }
+  .cs-statement__button:hover {
+    opacity: 0.86;
+  }
+  .cs-statement__button:focus-visible {
+    outline: 0.2rem solid #121212;
+    outline-offset: 0.3rem;
+  }
+  @media screen and (min-width: 750px) {
+    .cs-statement {
+      padding-top: var(--cs-st-pt);
+      padding-bottom: var(--cs-st-pb);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Chosen statement",
+  "tag": "div",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "line_1", "label": "First line", "default": "You are here for a reason." },
+    { "type": "text", "id": "line_2", "label": "Second line", "default": "You are Chosen." },
+    { "type": "text", "id": "button_label", "label": "Button label" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    { "type": "header", "content": "Spacing" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Top padding", "default": 128 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Bottom padding", "default": 128 }
+  ],
+  "presets": [{ "name": "Chosen statement" }]
+}
+{% endschema %}

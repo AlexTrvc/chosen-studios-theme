@@ -1,0 +1,168 @@
+<section class="cs-strip" style="--cs-strip-pt: {{ section.settings.padding_top }}px; --cs-strip-pb: {{ section.settings.padding_bottom }}px;">
+  <div class="page-width">
+    <div class="cs-strip__head">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="cs-strip__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="cs-strip__heading">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+      </div>
+      {%- if section.settings.link_label != blank and section.settings.link != blank -%}
+        <a class="cs-strip__link" href="{{ section.settings.link }}">{{ section.settings.link_label | escape }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="cs-strip__grid">
+    {%- for block in section.blocks -%}
+      <figure class="cs-strip__item" {{ block.shopify_attributes }}>
+        {%- if block.settings.link != blank -%}
+          <a class="cs-strip__item-link" href="{{ block.settings.link }}" aria-label="{{ block.settings.image.alt | default: section.settings.heading | escape }}"></a>
+        {%- endif -%}
+        {%- if block.settings.image != blank -%}
+          {{
+            block.settings.image
+            | image_url: width: 1200
+            | image_tag:
+              widths: '400, 600, 800, 1200',
+              sizes: '(min-width: 750px) 25vw, 50vw',
+              loading: 'lazy',
+              class: 'cs-strip__img'
+          }}
+        {%- else -%}
+          {{ 'image' | placeholder_svg_tag: 'cs-strip__img' }}
+        {%- endif -%}
+      </figure>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .cs-strip {
+    padding-top: calc(var(--cs-strip-pt) * 0.75);
+    padding-bottom: calc(var(--cs-strip-pb) * 0.75);
+  }
+  .cs-strip__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.6rem 3.2rem;
+    margin-bottom: 2.4rem;
+  }
+  .cs-strip__eyebrow {
+    margin: 0 0 0.8rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #555555;
+  }
+  .cs-strip__heading {
+    margin: 0;
+    font-size: clamp(2.8rem, 4.4vw, 5.6rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #121212;
+  }
+  .cs-strip__link {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #121212;
+    text-decoration: none;
+    border-bottom: 0.1rem solid currentColor;
+    padding-bottom: 0.2rem;
+  }
+  .cs-strip__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+  .cs-strip__item {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+    margin: 0;
+    background: #f3f3f3;
+  }
+  .cs-strip__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1);
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cs-strip__item-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .cs-strip__item-link:focus-visible {
+    outline: 0.2rem solid #121212;
+    outline-offset: -0.2rem;
+  }
+  @media (hover: hover) {
+    .cs-strip__item:hover .cs-strip__img {
+      transform: scale(1.03);
+    }
+  }
+  @media screen and (min-width: 750px) {
+    .cs-strip {
+      padding-top: var(--cs-strip-pt);
+      padding-bottom: var(--cs-strip-pb);
+    }
+    .cs-strip__head {
+      margin-bottom: 4rem;
+    }
+    .cs-strip__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.6rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cs-strip__img {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Chosen image strip",
+  "tag": "div",
+  "class": "section",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Lookbook" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "One night." },
+    { "type": "text", "id": "link_label", "label": "Link text", "default": "View the lookbook" },
+    { "type": "url", "id": "link", "label": "Link" },
+    { "type": "header", "content": "Spacing" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Top padding", "default": 48 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 160, "step": 8, "unit": "px", "label": "Bottom padding", "default": 48 }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Chosen image strip",
+      "blocks": [{ "type": "image" }, { "type": "image" }, { "type": "image" }, { "type": "image" }]
+    }
+  ]
+}
+{% endschema %}
