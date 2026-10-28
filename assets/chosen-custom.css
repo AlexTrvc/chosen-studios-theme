@@ -1176,3 +1176,27 @@ body:has(.chosen-split-section):not(.chosen-mega-open) .header__heading-logo {
   line-height: 1.55;
   color: rgba(var(--color-foreground), 0.75);
 }
+
+/* ---------------------------------------------------------
+   Product gallery — one even grey field. The product shots sit on
+   white; multiply melts that white into the #F3F3F3 field so the
+   photo, the letterbox bands and the thumbnails read as one surface.
+   --------------------------------------------------------- */
+.product .product__media-wrapper,
+.product.product--large:not(.product--no-media) .product__media-wrapper,
+.product .product__media-wrapper .media,
+.product .product__media-wrapper .thumbnail {
+  background-color: #f3f3f3;
+}
+
+.product .product__media-wrapper .media img,
+.product .product__media-wrapper .thumbnail img {
+  mix-blend-mode: multiply;
+}
+
+/* Footer payment icons in greyscale, so the brand colours of the
+   card schemes don't break the black-and-white look. */
+.footer .list-payment__item svg {
+  filter: grayscale(1);
+  opacity: 0.75;
+}
