@@ -1,0 +1,1178 @@
+/*
+  Chosen Studios — theme refinements.
+  Kept in its own file so Dawn's core assets stay untouched on theme updates.
+
+  NOTE: Dawn loads section-footer.css from inside the footer section, so it
+  lands AFTER this file in the document. Every footer rule below is therefore
+  prefixed with `.footer` to out-specify Dawn rather than rely on load order.
+*/
+
+/* ---------------------------------------------------------
+   1. Scrollbar — the reference site keeps the chrome hidden.
+   Wheel, trackpad, keyboard and touch scrolling all still work.
+   --------------------------------------------------------- */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* ---------------------------------------------------------
+   2. Container — full width across the site, with normal
+   breathing room at the sides instead of a centred box.
+   --------------------------------------------------------- */
+.page-width {
+  max-width: 100%;
+  padding-left: 2.4rem;
+  padding-right: 2.4rem;
+}
+
+@media screen and (min-width: 750px) {
+  .page-width,
+  .header.page-width,
+  .utility-bar__grid.page-width {
+    padding-left: 3.2rem;
+    padding-right: 3.2rem;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .page-width,
+  .header:not(.drawer-menu).page-width {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+/* ---------------------------------------------------------
+   3. Header — lighter, roomier nav to match the reference.
+   --------------------------------------------------------- */
+.header__menu-item {
+  font-size: 1.3rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/*
+  The menu shares its grid column with nothing but empty space on the left of
+  the centred logo, and Dawn lets it wrap. With five links and a 2.4rem gap it
+  ran out of room below ~1300px and "Contact" dropped onto a second line.
+  Keep it on one line, and tighten the links a little more on small desktops.
+*/
+.header__inline-menu .list-menu--inline {
+  flex-wrap: nowrap;
+  column-gap: 0.8rem;
+}
+
+.header__inline-menu .header__menu-item {
+  white-space: nowrap;
+}
+
+@media screen and (min-width: 990px) and (max-width: 1199px) {
+  .header__inline-menu .list-menu--inline {
+    column-gap: 0;
+  }
+
+  .header__inline-menu .header__menu-item {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+    font-size: 1.2rem;
+  }
+}
+
+/*
+  The search and account SVGs use an 18x19 viewBox and fill it edge to edge.
+  The cart SVG uses a 40x40 viewBox with the bag drawn across roughly 55% of it,
+  so it needs a bigger box to render at the same optical size. Sizing both the
+  same way makes the cart look shrunken.
+*/
+.header__icon .icon {
+  height: 2rem;
+  width: 2rem;
+}
+
+.header__icon--cart .icon {
+  height: 3.8rem;
+  width: 3.8rem;
+}
+
+.header__icons {
+  column-gap: 0.4rem;
+}
+
+.header .localization-form__select,
+.header .localization-form button {
+  font-size: 1.2rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.header .localization-form__select .icon-caret {
+  height: 0.6rem;
+}
+
+/*
+  The uploaded logo is pure white with transparency (checked: every opaque
+  pixel is #FFFFFF), so it disappears against the light header on inner pages.
+  brightness(0) repaints it black and leaves the alpha alone — no second file
+  needed. Over the hero the header is transparent on a dark image, so there it
+  stays white.
+*/
+.header__heading-logo {
+  filter: brightness(0);
+  transition: filter 0.2s ease;
+}
+
+body:has(.chosen-split-section):not(.chosen-mega-open) .header__heading-logo {
+  filter: none;
+}
+
+/* ---------------------------------------------------------
+   4. Footer type
+   --------------------------------------------------------- */
+.footer .footer-block__heading {
+  margin: 0 0 2.4rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+.footer .footer-block__details-content {
+  margin-bottom: 0;
+}
+
+.footer .footer-block__details-content .list-menu__item--link {
+  padding: 0 0 1.4rem;
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.footer .footer-block--newsletter .footer-block__newsletter {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.footer .newsletter-form__field-wrapper {
+  max-width: 34rem;
+}
+
+/* ---------------------------------------------------------
+   5. Footer layout — one row: intro column, then link columns.
+   --------------------------------------------------------- */
+@media screen and (min-width: 990px) {
+  .footer .footer__content-top {
+    display: grid;
+    grid-template-columns: minmax(28rem, 1fr) 2.4fr;
+    column-gap: 6rem;
+    align-items: start;
+    padding-bottom: 4rem;
+  }
+
+  .footer .footer__content-top .footer__blocks-wrapper {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    row-gap: 0;
+  }
+
+  /* Dawn's grid is flex-based, so equalise the columns here. */
+  .footer .footer__content-top .footer__blocks-wrapper .grid__item {
+    width: auto;
+    max-width: none;
+    flex: 1 1 0;
+  }
+
+  .footer .footer__content-top .footer-block--newsletter {
+    grid-column: 1;
+    grid-row: 1;
+    display: block;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    text-align: left;
+  }
+
+  .footer .footer__content-top .newsletter-form {
+    margin: 0;
+    justify-items: start;
+  }
+}
+
+/*
+  Below desktop Dawn gives the top of the footer its own, wider side padding
+  and centres the newsletter, while the bottom row (language, payment icons,
+  copyright) follows the page gutter. The two halves didn't line up. Put the
+  whole footer on the page gutter and flush left.
+*/
+@media screen and (max-width: 989px) {
+  .footer .footer__content-top.page-width {
+    padding-left: 2.4rem;
+    padding-right: 2.4rem;
+  }
+
+  .footer .footer-block--newsletter {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .footer .footer-block--newsletter .footer-block__newsletter {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .footer .footer-block--newsletter .newsletter-form {
+    margin-left: 0;
+    margin-right: 0;
+    justify-items: start;
+  }
+
+  /* Each icon carries 0.5rem of padding; pull the row back by the same so the
+     first icon sits on the gutter. */
+  .footer .list-payment {
+    justify-content: flex-start;
+    margin-left: -0.5rem;
+  }
+}
+
+@media screen and (min-width: 750px) and (max-width: 989px) {
+  .footer .footer__content-top.page-width {
+    padding-left: 3.2rem;
+    padding-right: 3.2rem;
+  }
+}
+
+/* Dawn insets the language label and picker by 1rem, which left them off the
+   edge every other footer item sits on. Dawn's picker rule uses
+   `.localization-form:only-child` and loads after this file, hence the long
+   selector. */
+.footer .footer__localization h2,
+.footer .footer__localization .localization-form .localization-form__select {
+  margin-left: 0;
+}
+
+/* ---------------------------------------------------------
+   6. Footer bottom — copyright, then legal links, flush left,
+   with no divider and no dot separators.
+   --------------------------------------------------------- */
+.footer .footer__content-bottom {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.footer .footer__content-bottom-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 1.6rem;
+}
+
+.footer .footer__column,
+.footer .footer__column--info {
+  width: 100%;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.footer .footer__localization {
+  justify-content: flex-start;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.footer .footer__copyright {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 1.2rem;
+  text-align: left;
+}
+
+.footer .footer__copyright > .copyright__content:first-of-type {
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* The reference footer carries no "Powered by" line. */
+.footer .footer__copyright > .copyright__content:nth-of-type(2) {
+  display: none;
+}
+
+.footer .policies {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  column-gap: 2.4rem;
+  row-gap: 0.8rem;
+  margin: 0;
+  padding-left: 0;
+}
+
+.footer .policies li {
+  margin: 0;
+  padding: 0;
+}
+
+.footer .policies li::before {
+  content: none;
+}
+
+.footer .policies li a {
+  padding: 0;
+  font-size: 1.3rem;
+  font-weight: 400;
+}
+
+/* ---------------------------------------------------------
+   7. Collection page — full-bleed grid of tiles separated by
+   hairlines, and product cards laid out like the reference:
+   title and price on one line, colour name and swatches under.
+
+   Dawn loads component-card.css from inside the section, so it
+   lands after this file. The #product-grid id keeps these rules
+   winning without needing !important.
+
+   Every card rule uses `.card > .card__content` on purpose. There are TWO
+   .card__content blocks per card: one inside .card__inner that overlays the
+   image (badges), and one below it for the text. Styling both paints the
+   overlay over the photo and hides it.
+   --------------------------------------------------------- */
+.collection-hero__inner {
+  padding-top: 3.2rem;
+  padding-bottom: 2.4rem;
+}
+
+.collection-hero__title {
+  margin: 0 0 0.8rem;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.collection-hero__description {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 400;
+}
+
+/* Separators are drawn on the cells, not as a grey sheet behind a 1px gap.
+   The gap approach leaves the unfilled cells of the last row showing grey. */
+#product-grid.product-grid {
+  --grid-desktop-horizontal-spacing: 0px;
+  --grid-mobile-horizontal-spacing: 0px;
+  --grid-desktop-vertical-spacing: 0px;
+  --grid-mobile-vertical-spacing: 0px;
+  margin-left: -2.4rem;
+  margin-right: -2.4rem;
+  width: auto;
+  background-color: transparent;
+}
+
+/* Inset shadows, so the hairlines cost no layout width. */
+#product-grid .grid__item {
+  box-shadow: inset -0.1rem 0 0 0 rgba(var(--color-foreground), 0.08),
+    inset 0 -0.1rem 0 0 rgba(var(--color-foreground), 0.08);
+}
+
+@media screen and (min-width: 750px) {
+  #product-grid.product-grid {
+    margin-left: -3.2rem;
+    margin-right: -3.2rem;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  #product-grid.product-grid {
+    margin-left: -4rem;
+    margin-right: -4rem;
+  }
+}
+
+#product-grid .card-wrapper,
+#product-grid .card,
+#product-grid .card__inner {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* White strip under each tile so the hairlines read as separators. */
+#product-grid .card > .card__content {
+  padding: 1.4rem 1.2rem 1.6rem;
+  background-color: rgb(var(--color-background));
+  /* Keeps every tile the same height even when a product has no colour
+     option, so the rows below don't stagger. */
+  min-height: 9.6rem;
+}
+
+/* Title on the left, price on the right, extras stacked underneath. */
+#product-grid .card > .card__content .card__information {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  column-gap: 1.6rem;
+  row-gap: 0.4rem;
+  padding: 0;
+}
+
+#product-grid .card > .card__content .card__heading {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+#product-grid .card > .card__content .card-information {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: right;
+}
+
+/* Dawn spaces the children of .card-information apart, which drops the price
+   below the title baseline. Clear it so both sit on the same line. */
+#product-grid .card > .card__content .card-information > *,
+#product-grid .card > .card__content .card-information .price {
+  margin-top: 0;
+}
+
+#product-grid .card > .card__content .card-information .price {
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+#product-grid .card > .card__content .card__variant {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+#product-grid .card > .card__content .card__variant-name {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: rgba(var(--color-foreground), 0.62);
+}
+
+#product-grid .card > .card__content .card__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+#product-grid .card > .card__content .card__swatches .swatch {
+  display: block;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--swatch--background, transparent);
+  background-size: cover;
+  background-position: center;
+  box-shadow: inset 0 0 0 0.1rem rgba(var(--color-foreground), 0.22);
+}
+
+#product-grid .card > .card__content .card__swatch-count {
+  margin-left: 0.4rem;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: rgba(var(--color-foreground), 0.62);
+}
+
+/* Filter and sort bar — quiet, right-aligned, no heavy chrome. */
+.facets-container .facets__heading,
+.facets-container .facet-filters__label,
+.facets-container .facets__summary,
+.facets-container .select__select {
+  font-size: 1.3rem;
+  font-weight: 400;
+}
+
+.facets-container .product-count__text {
+  font-size: 1.3rem;
+}
+
+/* ---------------------------------------------------------
+   8. Page content — the closing statement on Our Story.
+   Wrapped as <div class="chosen-statement"> in the page body.
+   --------------------------------------------------------- */
+.rte .chosen-statement {
+  margin-top: 6.4rem;
+  padding-top: 4rem;
+  border-top: 0.1rem solid rgba(var(--color-foreground), 0.14);
+}
+
+.rte .chosen-statement p {
+  margin: 0;
+  font-size: clamp(2.6rem, 4vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+.rte .chosen-statement p + p {
+  margin-top: 0.4rem;
+}
+
+/* ---------------------------------------------------------
+   9. Product page — full-bleed split: media on the left over a
+   soft grey field, the buy column on the right.
+
+   section-main-product.css is loaded from inside the section, so
+   it lands after this file. Rules below carry a `.product` (or
+   deeper) prefix to out-specify Dawn rather than rely on order.
+   --------------------------------------------------------- */
+
+/* Let the product break out of the page gutters. */
+@media screen and (min-width: 990px) {
+  .page-width:has(> .product) {
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .product.grid {
+    gap: 0;
+  }
+
+  /* Dawn ships `.product--large:not(.product--no-media) .product__info-wrapper`
+     at 35% width with no right padding. That selector scores 0,3,0, so these
+     have to reach 0,4,0 to win — a plain `.product .product__…` loses. */
+  .product.product--large:not(.product--no-media) .product__media-wrapper,
+  .product.product--large:not(.product--no-media) .product__info-wrapper {
+    max-width: 50%;
+    width: 50%;
+  }
+
+  .product.product--large:not(.product--no-media) .product__media-wrapper {
+    padding: 0;
+    background-color: rgba(var(--color-foreground), 0.04);
+  }
+
+  .product.product--large:not(.product--no-media) .product__info-wrapper {
+    padding: 6.4rem clamp(3.2rem, 5vw, 8rem);
+  }
+}
+
+/* Title on the left, price on the right, everything else full width.
+   From tablet up — below that they stack, which reads better on a phone. */
+@media screen and (min-width: 750px) {
+  .product .product__info-container {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 2.4rem;
+    align-items: start;
+  }
+
+  .product .product__info-container > * {
+    grid-column: 1 / -1;
+  }
+
+  .product .product__info-container > .product__title {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .product .product__info-container > div[id^='price-'] {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+  }
+}
+
+/* The grey media field is part of the look on every screen, not just desktop. */
+.product .product__media-wrapper {
+  background-color: rgba(var(--color-foreground), 0.04);
+}
+
+.product .product__title,
+.product .product__title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+/* Dawn's `.product__info-container > * + *` puts 1.5rem on top of every block
+   after the first, which drops the price below the title. Clear it for the
+   price only, so the rest of the column keeps its rhythm. */
+.product .product__info-container > div[id^='price-'] {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Shopify's tax and shipping note travels with the price block. Give it room
+   and keep it quiet so it doesn't compete with the title. */
+.product .product__info-container .product__tax {
+  margin-top: 1.2rem;
+  margin-bottom: 0;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.product .price--large,
+.product .price--large .price-item,
+.product .price .price-item {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* Colour swatches read as tall image tiles, underlined when selected. */
+.product .product-form__input--swatch .swatch {
+  --swatch-input--size: 6.4rem;
+  --swatch-input--border-radius: 0;
+  aspect-ratio: 4 / 5;
+  border-color: rgba(var(--color-foreground), 0.12);
+}
+
+.product .product-form__input--swatch .swatch-input__input + .swatch-input__label {
+  --swatch-input--border-radius: 0;
+  padding-bottom: 0.8rem;
+  border-bottom: 0.2rem solid transparent;
+}
+
+.product .product-form__input--swatch .swatch-input__input:checked + .swatch-input__label,
+.product .product-form__input--swatch .swatch-input__input:active + .swatch-input__label {
+  outline: 0;
+  border-bottom-color: rgb(var(--color-foreground));
+}
+
+.product .product-form__input--swatch .swatch-input__input:hover + .swatch-input__label,
+.product .product-form__input--swatch .swatch-input__input + .swatch-input__label:hover {
+  outline: 0;
+  border-bottom-color: rgba(var(--color-foreground), 0.35);
+}
+
+/* Sizes sit in one even row of bordered boxes. */
+.product .product-form__input--pill {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 2.4rem;
+}
+
+.product .product-form__input--pill .form__label,
+.product .product-form__input--swatch .form__label {
+  flex: 0 0 100%;
+  margin-bottom: 1.2rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.product .product-form__input--pill label {
+  flex: 1 1 0;
+  min-width: 5.6rem;
+  margin: 0;
+  justify-content: center;
+  border-radius: 0;
+  font-size: 1.3rem;
+  font-weight: 400;
+}
+
+/* Add to cart — full width, square, quiet type. */
+.product .product-form__submit,
+.product .shopify-payment-button__button {
+  min-height: 5.6rem;
+  border-radius: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Reassurance rows and the collapsible section stay understated. */
+.product .product__accordion .summary__title,
+.product .product-form__input .form__label {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.product .product__accordion {
+  border-top: 0.1rem solid rgba(var(--color-foreground), 0.12);
+  border-bottom: 0;
+  margin-top: 0;
+}
+
+.product .product__accordion .accordion__content {
+  font-size: 1.4rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.product .icon-with-text--vertical,
+.product .icon-with-text {
+  margin: 2.4rem 0;
+  font-size: 1.4rem;
+}
+
+.product .product__description {
+  font-size: 1.4rem;
+}
+
+/* Dawn demotes Add to cart to the secondary style whenever the dynamic
+   checkout buttons are on. The reference keeps it as the solid primary. */
+.product .product-form__submit,
+.product .product-form__submit.button--secondary {
+  background-color: rgb(var(--color-button));
+  color: rgb(var(--color-button-text));
+  border-color: rgb(var(--color-button));
+}
+
+.product .product-form__submit:not([disabled]):hover {
+  opacity: 0.86;
+}
+
+/* Tighten the run from the size row down to the button. */
+.product .product-form {
+  margin-top: 0.8rem;
+}
+
+.product .product-form__buttons {
+  max-width: 100%;
+}
+
+/* ---------------------------------------------------------
+   10. Cart drawer, cart page and search — same square, quiet
+   language as the rest of the site.
+
+   Dawn loads component-cart-drawer.css and component-search.css
+   from inside their sections, so these carry a wrapper class to
+   out-specify them rather than relying on load order.
+   --------------------------------------------------------- */
+
+/* ---- Cart drawer ---- */
+.drawer .drawer__inner {
+  border-radius: 0;
+  border-left: 0.1rem solid rgba(var(--color-foreground), 0.08);
+  box-shadow: -0.4rem 0 2.4rem rgba(0, 0, 0, 0.12);
+  padding: 0;
+}
+
+.drawer .drawer__header {
+  padding: 2.4rem 2.4rem 1.6rem;
+  border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.08);
+  margin: 0;
+}
+
+/* Dawn parks the close button at right: -10px, which only works with its own
+   header padding. With the padding above, the X hung off the screen edge on
+   phones. Pull it back inside the header. */
+.drawer .drawer__header .drawer__close {
+  right: 0.8rem;
+}
+
+.drawer .drawer__heading {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.drawer .drawer__contents,
+.drawer .drawer__footer {
+  padding-left: 2.4rem;
+  padding-right: 2.4rem;
+}
+
+.drawer .cart-item__name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.drawer .cart-item__details .product-option,
+.drawer .cart-item .price {
+  font-size: 1.2rem;
+}
+
+/* On a phone the line total column is narrow enough that "CHF 79.00" broke
+   over two lines. */
+.drawer .cart-item__totals .price {
+  white-space: nowrap;
+}
+
+.drawer .cart-drawer__footer,
+.drawer .drawer__footer {
+  border-top: 0.1rem solid rgba(var(--color-foreground), 0.08);
+}
+
+.drawer .totals__subtotal,
+.drawer .totals__subtotal-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.drawer .cart__checkout-button,
+.cart__checkout-button {
+  min-height: 5.6rem;
+  border-radius: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---- Empty states, drawer and page ---- */
+.drawer .cart-drawer__empty-content,
+.cart__warnings {
+  padding: 4.8rem 2.4rem;
+}
+
+.drawer .cart__empty-text,
+.cart__empty-text {
+  margin: 0 0 2.4rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.drawer .cart-drawer__empty-content .button,
+.cart__warnings .button {
+  min-height: 5.2rem;
+  border-radius: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.drawer .cart-drawer__collection {
+  padding-top: 2.4rem;
+  border-top: 0.1rem solid rgba(var(--color-foreground), 0.08);
+}
+
+/* ---- Cart page ---- */
+.cart__items .cart-items th {
+  padding-bottom: 1.2rem;
+  border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.12);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cart__items .cart-item {
+  border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.08);
+}
+
+.cart__items .cart-item__name {
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cart__items .cart-item__image {
+  border-radius: 0;
+}
+
+.cart__footer .totals__total,
+.cart__footer .totals__total-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Search: turn Dawn's header modal into a right-hand drawer ----
+
+   Three layers, deliberately:
+     .search-modal          full viewport, transparent, owns the stacking context
+     .modal-overlay         the dim + blur, filling it
+     .search-modal__content the opaque panel on the right, above the overlay
+
+   An earlier attempt put the overlay at z-index -1 inside an opaque
+   .search-modal. That does not work: .search-modal creates a stacking context,
+   and negative z-index children paint AFTER the parent's background, so the
+   overlay covered the panel. Only children with their own background showed. */
+.header__search .search-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  background: none;
+  border: 0;
+}
+
+.header__search .modal-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.header__search .search-modal__content,
+.header__search .search-modal__content-bottom,
+.header__search .search-modal__content-top {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: min(46rem, 100%);
+  height: 100%;
+  padding: 6.4rem 2.4rem 2.4rem;
+  background: rgb(var(--color-background));
+  border-left: 0.1rem solid rgba(var(--color-foreground), 0.08);
+  box-shadow: -0.4rem 0 2.4rem rgba(0, 0, 0, 0.12);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.header__search .search-modal__content::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.header__search .search-modal__form {
+  width: 100%;
+  max-width: 100%;
+}
+
+.header__search .search-modal__close-button {
+  position: absolute;
+  top: 1.6rem;
+  right: 1.6rem;
+  left: auto;
+  z-index: 2;
+}
+
+.header__search .search__input.field__input {
+  font-size: 1.4rem;
+}
+
+.header__search .predictive-search {
+  position: static;
+  border: 0;
+  box-shadow: none;
+  margin-top: 2rem;
+  max-height: none;
+  overflow: visible;
+}
+
+.header__search .predictive-search__heading {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.header__search .predictive-search__item {
+  border-radius: 0;
+}
+
+.header__search .predictive-search__item-heading {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+/* ---- Search drawer: suggestions and the pre-typing product list ---- */
+.chosen-search-extras {
+  margin-top: 2.8rem;
+}
+
+.chosen-search-extras[hidden] {
+  display: none;
+}
+
+.chosen-search-extras__heading {
+  margin: 0 0 1.2rem;
+  color: rgba(var(--color-foreground), 0.5);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.chosen-search-extras__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 2.8rem;
+}
+
+.chosen-search-extras__chip {
+  padding: 0.8rem 1.4rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.18);
+  border-radius: 0;
+  background: none;
+  color: rgb(var(--color-foreground));
+  font-family: inherit;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.chosen-search-extras__chip:hover {
+  border-color: rgb(var(--color-foreground));
+  background-color: rgba(var(--color-foreground), 0.05);
+}
+
+.chosen-search-extras__list {
+  display: grid;
+  gap: 0.1rem;
+  margin: 0;
+  padding: 0;
+  background-color: rgba(var(--color-foreground), 0.08);
+}
+
+.chosen-search-extras__item {
+  display: grid;
+  grid-template-columns: 7.2rem 1fr;
+  gap: 1.4rem;
+  align-items: center;
+  padding: 1.2rem;
+  background-color: rgb(var(--color-background));
+  text-decoration: none;
+  color: inherit;
+}
+
+.chosen-search-extras__item:hover {
+  background-color: rgba(var(--color-foreground), 0.03);
+}
+
+.chosen-search-extras__thumb {
+  display: block;
+  width: 7.2rem;
+  height: 8rem;
+  overflow: hidden;
+  background-color: rgba(var(--color-foreground), 0.05);
+}
+
+.chosen-search-extras__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chosen-search-extras__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.chosen-search-extras__title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.chosen-search-extras__swatches {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chosen-search-extras__swatches .swatch {
+  display: block;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: var(--swatch--background, transparent);
+  background-size: cover;
+  background-position: center;
+  box-shadow: inset 0 0 0 0.1rem rgba(var(--color-foreground), 0.22);
+}
+
+.chosen-search-extras__more,
+.chosen-search-extras__was {
+  font-size: 1.15rem;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.chosen-search-extras__price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+/* Images inside page content sit full width with room around them. */
+.rte img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 4rem 0;
+}
+
+/* Size table inside the product accordion: scrolls rather than squeezing. */
+.product .product__accordion .accordion__content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.6rem;
+  font-size: 1.3rem;
+}
+
+.product .product__accordion .accordion__content table th,
+.product .product__accordion .accordion__content table td {
+  padding: 0.8rem 0.6rem;
+  border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.1);
+  text-align: left;
+}
+
+.product .product__accordion .accordion__content table th {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.product .product__accordion .accordion__content {
+  overflow-x: auto;
+}
+
+.product .product__accordion .accordion__content ul {
+  margin: 0 0 1.6rem;
+  padding-left: 1.8rem;
+}
+
+.product .product__accordion .accordion__content h3 {
+  margin: 2rem 0 0.8rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+/* Short intro line under the price on the product page. */
+.product .product__text {
+  margin: 1.6rem 0 0;
+  font-size: 1.4rem;
+  line-height: 1.55;
+  color: rgba(var(--color-foreground), 0.75);
+}

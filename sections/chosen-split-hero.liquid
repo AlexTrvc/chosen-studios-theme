@@ -1,0 +1,650 @@
+{% liquid
+  assign overlay_alpha = section.settings.overlay_opacity | divided_by: 100.0
+  assign button_alpha = section.settings.button_background_opacity | divided_by: 100.0
+  assign button_alpha_hover = section.settings.button_background_opacity | plus: 18 | at_most: 100 | divided_by: 100.0
+%}
+
+<section
+  id="ChosenSplit-{{ section.id }}"
+  class="chosen-split chosen-split--{{ section.settings.section_height }}"
+  style="
+    --chosen-split-bg: {{ section.settings.background_color }};
+    --chosen-split-text: {{ section.settings.text_color }};
+    --chosen-split-overlay: {{ section.settings.overlay_color }};
+    --chosen-split-overlay-opacity: {{ overlay_alpha }};
+    --chosen-split-btn-bg: {{ section.settings.button_background | color_modify: 'alpha', button_alpha }};
+    --chosen-split-btn-bg-hover: {{ section.settings.button_background | color_modify: 'alpha', button_alpha_hover }};
+    --chosen-split-btn-text: {{ section.settings.button_text_color }};
+    --chosen-split-eyebrow-size: {{ section.settings.eyebrow_size }}px;
+    --chosen-split-title-size: {{ section.settings.title_size }}px;
+  "
+>
+  {%- for block in section.blocks -%}
+    <div
+      class="chosen-split__panel"
+      style="--chosen-split-focal: {{ block.settings.image_position | default: 'center center' }};"
+      {{ block.shopify_attributes }}
+    >
+      <div class="chosen-split__media" aria-hidden="true">
+        {%- if block.settings.image != blank -%}
+          {%- comment -%}
+            The panel is cropped to fill with object-fit: cover, so a landscape
+            photo in a tall panel renders much wider than the panel itself. A
+            plain "100vw" makes the browser fetch a file sized to the panel
+            width, which then gets blown up to the panel height and looks soft
+            (on a phone a 900px file was stretched to roughly 2700px).
+
+            So work out the width the image really renders at: whichever is
+            larger of the panel width and the panel height times the image's
+            aspect ratio. The aspect-ratio media queries pick between the two.
+          {%- endcomment -%}
+          {%- liquid
+            assign img_ratio = block.settings.image.aspect_ratio | default: 1.5
+            assign panel_count = section.blocks.size | at_least: 1
+
+            case section.settings.section_height
+              when 'large'
+                assign desk_h = 0.8
+              when 'medium'
+                assign desk_h = 0.62
+              else
+                assign desk_h = 1.0
+            endcase
+
+            assign desk_vw = 100 | divided_by: panel_count
+            assign desk_vh = desk_h | times: img_ratio | times: 100 | ceil
+            assign desk_break = desk_h | times: img_ratio | times: panel_count | times: 1000 | round
+
+            assign mob_h = section.settings.mobile_panel_height | divided_by: 100.0
+            if section.settings.section_height == 'medium'
+              assign mob_h = mob_h | times: 0.8
+            endif
+            assign mob_vh = mob_h | times: img_ratio | times: 100 | ceil
+            assign mob_break = mob_h | times: img_ratio | times: 1000 | round
+          -%}
+          {%- capture hero_sizes -%}
+            (min-width: 750px) and (min-aspect-ratio: {{ desk_break }}/1000) {{ desk_vw }}vw, (min-width: 750px) {{ desk_vh }}vh,
+            {%- if block.settings.mobile_image != blank -%}
+              {%- comment -%} Hidden on phones when a mobile image is set, so fetch the smallest file. {%- endcomment -%}
+              1px
+            {%- else -%}
+              (min-aspect-ratio: {{ mob_break }}/1000) 100vw, {{ mob_vh }}vh
+            {%- endif -%}
+          {%- endcapture -%}
+          {{
+            block.settings.image
+            | image_url: width: 3000
+            | image_tag:
+              class: 'chosen-split__asset',
+              loading: 'eager',
+              fetchpriority: 'high',
+              widths: '600, 900, 1200, 1600, 2200, 3000',
+              sizes: hero_sizes
+          }}
+        {%- else -%}
+          {{ 'hero-apparel-1' | placeholder_svg_tag: 'chosen-split__asset chosen-split__placeholder' }}
+        {%- endif -%}
+
+        {%- comment -%}
+          A wide desktop crop loses too much on a phone. When a portrait image is
+          supplied it takes over below the mobile breakpoint.
+        {%- endcomment -%}
+        {%- if block.settings.mobile_image != blank -%}
+          {{
+            block.settings.mobile_image
+            | image_url: width: 1400
+            | image_tag:
+              class: 'chosen-split__asset chosen-split__asset--mobile',
+              loading: 'eager',
+              widths: '450, 700, 900, 1200, 1400',
+              sizes: '(min-width: 750px) 1px, 100vw'
+          }}
+        {%- endif -%}
+        <div class="chosen-split__overlay"></div>
+      </div>
+
+      <div class="chosen-split__content chosen-split__content--{{ section.settings.content_position }}">
+        {%- if block.settings.eyebrow != blank -%}
+          <p class="chosen-split__eyebrow">{{ block.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+
+        {%- if block.settings.heading != blank -%}
+          <h2 class="chosen-split__heading">{{ block.settings.heading | newline_to_br }}</h2>
+        {%- endif -%}
+
+        {%- if block.settings.button_label != blank -%}
+          <div class="chosen-split__buttons">
+            <a
+              class="chosen-split__button"
+              {% if block.settings.button_link != blank %}
+                href="{{ block.settings.button_link }}"
+              {% else %}
+                role="link" aria-disabled="true"
+              {% endif %}
+            >
+              {%- comment -%}
+                The label is printed twice so it can roll: the first copy slides
+                out of the top on hover while the second rises in from below.
+                Screen readers get the label once, from the visually hidden copy.
+              {%- endcomment -%}
+              <span class="chosen-split__button-roll" aria-hidden="true">
+                <span class="chosen-split__button-roll-inner">
+                  <span class="chosen-split__button-line">{{ block.settings.button_label | escape }}</span>
+                  <span class="chosen-split__button-line">{{ block.settings.button_label | escape }}</span>
+                </span>
+              </span>
+              <span class="visually-hidden">{{ block.settings.button_label | escape }}</span>
+            </a>
+
+            {%- if block.settings.button_label_2 != blank -%}
+              <a
+                class="chosen-split__button"
+                {% if block.settings.button_link_2 != blank %}
+                  href="{{ block.settings.button_link_2 }}"
+                {% else %}
+                  role="link" aria-disabled="true"
+                {% endif %}
+              >
+                <span class="chosen-split__button-roll" aria-hidden="true">
+                  <span class="chosen-split__button-roll-inner">
+                    <span class="chosen-split__button-line">{{ block.settings.button_label_2 | escape }}</span>
+                    <span class="chosen-split__button-line">{{ block.settings.button_label_2 | escape }}</span>
+                  </span>
+                </span>
+                <span class="visually-hidden">{{ block.settings.button_label_2 | escape }}</span>
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endfor -%}
+</section>
+
+<style>
+  #ChosenSplit-{{ section.id }} {
+    display: grid;
+    grid-template-columns: repeat({{ section.blocks.size | at_least: 1 }}, 1fr);
+    width: 100%;
+    background: var(--chosen-split-bg);
+    color: var(--chosen-split-text);
+    font-family: var(--font-body-family, Arial, sans-serif);
+  }
+  #ChosenSplit-{{ section.id }} * { box-sizing: border-box; }
+
+  #ChosenSplit-{{ section.id }} .chosen-split__panel {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    overflow: hidden;
+    padding: 48px 84px;
+  }
+  #ChosenSplit-{{ section.id }}.chosen-split--full .chosen-split__panel { min-height: 100svh; }
+  #ChosenSplit-{{ section.id }}.chosen-split--large .chosen-split__panel { min-height: 80svh; }
+  #ChosenSplit-{{ section.id }}.chosen-split--medium .chosen-split__panel { min-height: 62svh; }
+
+  #ChosenSplit-{{ section.id }} .chosen-split__media {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background: var(--chosen-split-bg);
+  }
+  #ChosenSplit-{{ section.id }} .chosen-split__asset {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Cover crops the overflow, so which part survives matters. Full height
+       heroes on wide screens cut the top, which is where a model's head is. */
+    object-position: var(--chosen-split-focal, center center);
+  }
+  #ChosenSplit-{{ section.id }} .chosen-split__asset--mobile { display: none; }
+
+  #ChosenSplit-{{ section.id }} .chosen-split__placeholder {
+    background: #1a1a1a;
+    fill: rgba(255, 255, 255, .12);
+  }
+  #ChosenSplit-{{ section.id }} .chosen-split__overlay {
+    position: absolute;
+    inset: 0;
+    background-color: var(--chosen-split-overlay);
+    opacity: var(--chosen-split-overlay-opacity);
+    pointer-events: none;
+  }
+
+  #ChosenSplit-{{ section.id }} .chosen-split__content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 460px;
+  }
+  #ChosenSplit-{{ section.id }} .chosen-split__content--top-left { align-self: start; justify-self: start; text-align: left; }
+  #ChosenSplit-{{ section.id }} .chosen-split__content--center-left { align-self: center; justify-self: start; text-align: left; }
+  #ChosenSplit-{{ section.id }} .chosen-split__content--center-center { align-self: center; justify-self: center; text-align: center; }
+  #ChosenSplit-{{ section.id }} .chosen-split__content--bottom-left { align-self: end; justify-self: start; text-align: left; }
+  #ChosenSplit-{{ section.id }} .chosen-split__content--bottom-center { align-self: end; justify-self: center; text-align: center; }
+
+  #ChosenSplit-{{ section.id }} .chosen-split__eyebrow {
+    margin: 0 0 10px;
+    color: inherit;
+    font-size: var(--chosen-split-eyebrow-size);
+    font-weight: 500;
+    line-height: 130%;
+    letter-spacing: {{ section.settings.eyebrow_letter_spacing }}px;
+  }
+
+  #ChosenSplit-{{ section.id }} .chosen-split__heading {
+    margin: 0;
+    color: inherit;
+    font-family: var(--font-heading-family, Arial, sans-serif);
+    font-size: clamp(32px, 4.2vw, var(--chosen-split-title-size));
+    font-weight: {{ section.settings.title_weight }};
+    line-height: 100%;
+    letter-spacing: {{ section.settings.title_letter_spacing }}px;
+    text-transform: {{ section.settings.title_transform }};
+  }
+
+  #ChosenSplit-{{ section.id }} .chosen-split__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: {{ section.settings.button_top_space }}px;
+  }
+  #ChosenSplit-{{ section.id }} .chosen-split__content--center-center .chosen-split__buttons,
+  #ChosenSplit-{{ section.id }} .chosen-split__content--bottom-center .chosen-split__buttons { justify-content: center; }
+
+  #ChosenSplit-{{ section.id }} .chosen-split__button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: {{ section.settings.button_height }}px;
+    padding: 0 {{ section.settings.button_padding_x }}px;
+    border: {{ section.settings.button_border_thickness }}px solid var(--chosen-split-btn-text);
+    border-radius: {{ section.settings.button_radius }}px;
+    color: var(--chosen-split-btn-text);
+    background-color: var(--chosen-split-btn-bg);
+    -webkit-backdrop-filter: blur({{ section.settings.button_blur }}px);
+    backdrop-filter: blur({{ section.settings.button_blur }}px);
+    font-size: {{ section.settings.button_font_size }}px;
+    font-weight: {{ section.settings.button_weight }};
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background-color .3s ease;
+  }
+  #ChosenSplit-{{ section.id }} .chosen-split__button:hover,
+  #ChosenSplit-{{ section.id }} .chosen-split__button:focus-visible {
+    background-color: var(--chosen-split-btn-bg-hover);
+  }
+
+  /* Label roll: the visible copy leaves through the top, the second rises in. */
+  #ChosenSplit-{{ section.id }} .chosen-split__button-roll {
+    display: block;
+    height: 1.5em;
+    overflow: hidden;
+  }
+  #ChosenSplit-{{ section.id }} .chosen-split__button-roll-inner {
+    display: block;
+    transition: transform .45s cubic-bezier(.65, .05, .36, 1);
+  }
+  #ChosenSplit-{{ section.id }} .chosen-split__button-line {
+    display: block;
+    height: 1.5em;
+    line-height: 1.5em;
+  }
+  #ChosenSplit-{{ section.id }} .chosen-split__button:hover .chosen-split__button-roll-inner,
+  #ChosenSplit-{{ section.id }} .chosen-split__button:focus-visible .chosen-split__button-roll-inner {
+    transform: translateY(-1.5em);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #ChosenSplit-{{ section.id }} .chosen-split__button-roll-inner { transition: none; }
+  }
+
+  /* Header sits transparently over the hero, like the reference site. */
+  /* Positioning is unconditional: the header must stay lifted out of flow even
+     while the slide-out panel is open, or the hero jumps down by its height.
+     Only the colours below are dropped when the panel opens. */
+  body:has(.chosen-split-section) .shopify-section-group-header-group {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+  }
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header-wrapper,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group sticky-header,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header {
+    background: transparent !important;
+    background-image: none !important;
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group a,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group summary,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header__menu-item,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header__heading,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header__heading-link,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header__icon,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .localization-form__select,
+  /* Dawn colours the active menu item on the inner span, so the link rule above
+     never reaches it — without this the current page reads as dark on dark. */
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header__active-menu-item,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header__menu-item span,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group svg {
+    color: {{ section.settings.text_color }} !important;
+  }
+
+  /* Panels that open out of the header (language and country pickers, submenus,
+     search, mobile drawer) have their own opaque background, so they must keep
+     their colour scheme's text colour. Without this the rule above turns their
+     contents white and they read as empty boxes. */
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .disclosure__list-wrapper a,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .disclosure__list-wrapper button,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .disclosure__list-wrapper span,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .disclosure__list-wrapper svg,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header__submenu a,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header__submenu span,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .header__submenu svg,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .menu-drawer a,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .menu-drawer summary,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .menu-drawer span,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .menu-drawer svg,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .search-modal a,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .search-modal span,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .search-modal svg,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .search-modal input,
+  body:not(.chosen-mega-open):has(.chosen-split-section) .shopify-section-group-header-group .search-modal label {
+    color: rgb(var(--color-foreground)) !important;
+  }
+
+  @media (max-width: 749px) {
+    #ChosenSplit-{{ section.id }} { grid-template-columns: 1fr; }
+    #ChosenSplit-{{ section.id }} .chosen-split__panel:has(.chosen-split__asset--mobile) .chosen-split__asset:not(.chosen-split__asset--mobile) { display: none; }
+    #ChosenSplit-{{ section.id }} .chosen-split__asset--mobile { display: block; }
+    #ChosenSplit-{{ section.id }} .chosen-split__panel { padding: 28px 22px; }
+    #ChosenSplit-{{ section.id }}.chosen-split--full .chosen-split__panel { min-height: {{ section.settings.mobile_panel_height }}svh; }
+    #ChosenSplit-{{ section.id }}.chosen-split--large .chosen-split__panel { min-height: {{ section.settings.mobile_panel_height }}svh; }
+    #ChosenSplit-{{ section.id }}.chosen-split--medium .chosen-split__panel { min-height: {{ section.settings.mobile_panel_height | times: 0.8 | round }}svh; }
+    #ChosenSplit-{{ section.id }} .chosen-split__content { max-width: 100%; }
+    #ChosenSplit-{{ section.id }} .chosen-split__heading { font-size: {{ section.settings.mobile_title_size }}px; }
+    #ChosenSplit-{{ section.id }} .chosen-split__button { min-height: 44px; padding: 0 20px; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Chosen split hero",
+  "tag": "section",
+  "class": "chosen-split-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select",
+      "id": "section_height",
+      "label": "Desktop height",
+      "options": [
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" },
+        { "value": "full", "label": "Full screen" }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "range",
+      "id": "mobile_panel_height",
+      "min": 40,
+      "max": 100,
+      "step": 5,
+      "unit": "svh",
+      "label": "Mobile height per panel",
+      "default": 65
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Text position",
+      "options": [
+        { "value": "top-left", "label": "Top left" },
+        { "value": "center-left", "label": "Center left" },
+        { "value": "center-center", "label": "Center" },
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" }
+      ],
+      "default": "center-left"
+    },
+
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#000000" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#ffffff" },
+    { "type": "color", "id": "overlay_color", "label": "Image overlay", "default": "#000000" },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 25
+    },
+
+    { "type": "header", "content": "Typography" },
+    {
+      "type": "range",
+      "id": "eyebrow_size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Eyebrow size",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_letter_spacing",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Eyebrow letter spacing",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 32,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "mobile_title_size",
+      "min": 24,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "label": "Mobile heading size",
+      "default": 34
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Heading weight",
+      "options": [
+        { "value": "400", "label": "Regular" },
+        { "value": "600", "label": "Semibold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "range",
+      "id": "title_letter_spacing",
+      "min": 0,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading letter spacing",
+      "default": 1
+    },
+    {
+      "type": "select",
+      "id": "title_transform",
+      "label": "Heading case",
+      "options": [
+        { "value": "none", "label": "As typed" },
+        { "value": "uppercase", "label": "Uppercase" }
+      ],
+      "default": "uppercase"
+    },
+
+    { "type": "header", "content": "Buttons" },
+    { "type": "color", "id": "button_background", "label": "Button background", "default": "#ffffff" },
+    {
+      "type": "range",
+      "id": "button_background_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Button background opacity",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "button_blur",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Button glass blur",
+      "default": 10
+    },
+    { "type": "color", "id": "button_text_color", "label": "Button text and border", "default": "#ffffff" },
+    {
+      "type": "select",
+      "id": "button_weight",
+      "label": "Button text weight",
+      "options": [
+        { "value": "400", "label": "Regular" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semibold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "range",
+      "id": "button_font_size",
+      "min": 9,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "label": "Button text size",
+      "default": 11
+    },
+    {
+      "type": "range",
+      "id": "button_padding_x",
+      "min": 14,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Button side padding",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "button_border_thickness",
+      "min": 0,
+      "max": 3,
+      "step": 1,
+      "unit": "px",
+      "label": "Button border",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Button corner radius",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_height",
+      "min": 36,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "label": "Button height",
+      "default": 46
+    },
+    {
+      "type": "range",
+      "id": "button_top_space",
+      "min": 8,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Space above buttons",
+      "default": 24
+    }
+  ],
+  "blocks": [
+    {
+      "type": "panel",
+      "name": "Panel",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image",
+          "info": "Optional. A tall 9:16 crop for phones. Falls back to the image above."
+        },
+        {
+          "type": "select",
+          "id": "image_position",
+          "label": "Focal point",
+          "info": "Which part of the image to keep when it is cropped to fill the panel.",
+          "options": [
+            { "value": "center top", "label": "Top" },
+            { "value": "center 25%", "label": "Upper" },
+            { "value": "center center", "label": "Middle" },
+            { "value": "center 75%", "label": "Lower" },
+            { "value": "center bottom", "label": "Bottom" },
+            { "value": "left center", "label": "Left" },
+            { "value": "right center", "label": "Right" }
+          ],
+          "default": "center 25%"
+        },
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Drop 01" },
+        { "type": "textarea", "id": "heading", "label": "Heading", "default": "Signature Hoodie" },
+        { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop" },
+        { "type": "url", "id": "button_link", "label": "Button link" },
+        { "type": "text", "id": "button_label_2", "label": "Second button label (optional)" },
+        { "type": "url", "id": "button_link_2", "label": "Second button link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Chosen split hero",
+      "blocks": [{ "type": "panel" }, { "type": "panel" }]
+    }
+  ]
+}
+{% endschema %}

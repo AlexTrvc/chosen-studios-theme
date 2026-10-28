@@ -1,0 +1,122 @@
+{% comment %}
+  Chosen Studios — what the search drawer shows before anything is typed.
+
+  Dawn's predictive search only reacts once there is a query, which leaves the
+  drawer blank on open. This fills that gap with suggested searches and a short
+  product list, then gets out of the way as soon as the shopper types.
+
+  Settings live in Theme settings → Search drawer.
+{% endcomment %}
+
+{%- liquid
+  assign chips = settings.search_chips | split: ','
+  assign default_collection = collections[settings.search_default_collection]
+  assign product_limit = settings.search_default_count | default: 4
+-%}
+
+{%- if chips.size > 0 or default_collection.products.size > 0 -%}
+  <div class="chosen-search-extras" data-chosen-search-extras>
+    {%- if chips.size > 0 -%}
+      <p class="chosen-search-extras__heading">
+        {{- settings.search_chips_heading | default: 'Popular searches' | escape -}}
+      </p>
+      <div class="chosen-search-extras__chips">
+        {%- for chip in chips -%}
+          {%- assign chip_label = chip | strip -%}
+          {%- if chip_label != blank -%}
+            <button type="button" class="chosen-search-extras__chip" data-chosen-search-chip="{{ chip_label | escape }}">
+              {{- chip_label | escape -}}
+            </button>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if default_collection.products.size > 0 -%}
+      <p class="chosen-search-extras__heading">
+        {{- settings.search_default_heading | default: 'Popular right now' | escape -}}
+      </p>
+      <ul class="chosen-search-extras__list list-unstyled">
+        {%- for item in default_collection.products limit: product_limit -%}
+          {%- liquid
+            assign swatch_option = null
+            for option in item.options_with_values
+              for value in option.values
+                if value.swatch
+                  assign swatch_option = option
+                  break
+                endif
+              endfor
+              if swatch_option
+                break
+              endif
+            endfor
+          -%}
+          <li>
+            <a class="chosen-search-extras__item" href="{{ item.url }}">
+              <span class="chosen-search-extras__thumb">
+                {%- if item.featured_media -%}
+                  {{
+                    item.featured_media
+                    | image_url: width: 240
+                    | image_tag: loading: 'lazy', widths: '120, 180, 240', sizes: '7.2rem'
+                  }}
+                {%- endif -%}
+              </span>
+              <span class="chosen-search-extras__body">
+                <span class="chosen-search-extras__title">{{ item.title | escape }}</span>
+                {%- if swatch_option -%}
+                  <span class="chosen-search-extras__swatches">
+                    {%- for value in swatch_option.values limit: 4 -%}
+                      {%- if value.swatch -%}
+                        {% render 'swatch', swatch: value.swatch %}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    {%- if swatch_option.values.size > 4 -%}
+                      <span class="chosen-search-extras__more">+{{ swatch_option.values.size | minus: 4 }}</span>
+                    {%- endif -%}
+                  </span>
+                {%- endif -%}
+                <span class="chosen-search-extras__price">
+                  {{- item.price | money -}}
+                  {%- if item.compare_at_price > item.price -%}
+                    <s class="chosen-search-extras__was">{{ item.compare_at_price | money }}</s>
+                  {%- endif -%}
+                </span>
+              </span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+
+  <script>
+    (function () {
+      var extras = document.querySelector('[data-chosen-search-extras]');
+      if (!extras) return;
+
+      var modal = extras.closest('.search-modal');
+      var input = modal && modal.querySelector('.search__input');
+      if (!input) return;
+
+      function sync() {
+        // Hand the drawer over to the live results the moment there's a query.
+        extras.hidden = input.value.trim().length > 0;
+      }
+
+      input.addEventListener('input', sync);
+      sync();
+
+      extras.querySelectorAll('[data-chosen-search-chip]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          input.value = chip.dataset.chosenSearchChip;
+          input.focus();
+          // Dawn's predictive search listens for input, not for value changes.
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          sync();
+        });
+      });
+    })();
+  </script>
+{%- endif -%}

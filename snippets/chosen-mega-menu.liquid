@@ -1,0 +1,242 @@
+{% comment %}
+  Chosen Studios — hover navigation panel.
+
+  Slides in from the left when the trigger in the header is hovered or
+  activated, and turns the header opaque while it is open.
+
+  Content comes from a single Shopify menu (Theme settings → Slide-out menu),
+  so the client can edit it without touching code:
+  - top-level items with NO sub-items become the short list at the top
+  - top-level items WITH sub-items become a titled group below it
+  - third-level items expand inside their parent
+
+  Settings live in theme settings rather than the header section because
+  Shopify allows only one link_list per schema and Dawn's header already
+  spends its one on the main menu.
+{% endcomment %}
+
+{%- liquid
+  assign mega = linklists[settings.mega_menu]
+  assign trigger_label = settings.mega_label | default: 'Shop'
+
+  assign standalone_count = 0
+  assign group_count = 0
+  for link in mega.links
+    if link.links.size > 0
+      assign group_count = group_count | plus: 1
+    else
+      assign standalone_count = standalone_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if settings.mega_enable and mega.links.size > 0 -%}
+  <li class="chosen-mega-item">
+    <chosen-mega-menu class="chosen-mega">
+    <button
+      type="button"
+      class="chosen-mega__trigger header__menu-item link link--text focus-inset"
+      aria-expanded="false"
+      aria-controls="ChosenMegaPanel"
+    >
+      <span>{{ trigger_label | escape }}</span>
+    </button>
+
+    <div class="chosen-mega__backdrop" hidden></div>
+
+    <div class="chosen-mega__panel" id="ChosenMegaPanel" hidden>
+      <div class="chosen-mega__inner{% unless settings.mega_image != blank %} chosen-mega__inner--no-media{% endunless %}">
+        <nav class="chosen-mega__nav" aria-label="{{ trigger_label | escape }}">
+          {%- if standalone_count > 0 -%}
+            <div class="chosen-mega__col">
+            <ul class="chosen-mega__list chosen-mega__list--primary list-unstyled">
+              {%- for link in mega.links -%}
+                {%- if link.links.size == 0 -%}
+                  <li>
+                    <a class="chosen-mega__link chosen-mega__link--primary" href="{{ link.url }}">
+                      {{- link.title | escape -}}
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+            </div>
+          {%- endif -%}
+
+          {%- if group_count > 0 -%}
+            {%- for link in mega.links -%}
+              {%- if link.links.size > 0 -%}
+                <div class="chosen-mega__col">
+                <p class="chosen-mega__eyebrow">{{ link.title | escape }}</p>
+                <ul class="chosen-mega__list list-unstyled">
+                  {%- for child in link.links -%}
+                    <li>
+                      {%- if child.links.size > 0 -%}
+                        <details class="chosen-mega__details">
+                          <summary class="chosen-mega__link chosen-mega__summary">
+                            <span>{{ child.title | escape }}</span>
+                            <svg class="chosen-mega__chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                              <path d="M4 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          </summary>
+                          <ul class="chosen-mega__sublist list-unstyled">
+                            {%- for grandchild in child.links -%}
+                              <li>
+                                <a class="chosen-mega__link chosen-mega__link--child" href="{{ grandchild.url }}">
+                                  {{- grandchild.title | escape -}}
+                                </a>
+                              </li>
+                            {%- endfor -%}
+                          </ul>
+                        </details>
+                      {%- else -%}
+                        <a class="chosen-mega__link" href="{{ child.url }}">{{ child.title | escape }}</a>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        </nav>
+
+        {%- if settings.mega_image != blank -%}
+          <div class="chosen-mega__media">
+            {%- if settings.mega_image_link != blank -%}
+              <a href="{{ settings.mega_image_link }}" class="chosen-mega__media-link">
+            {%- endif -%}
+            {{
+              settings.mega_image
+              | image_url: width: 1200
+              | image_tag:
+                class: 'chosen-mega__image',
+                loading: 'lazy',
+                widths: '400, 600, 900, 1200',
+                sizes: '(min-width: 990px) 34vw, 0px'
+            }}
+            {%- if settings.mega_image_caption != blank -%}
+              <span class="chosen-mega__caption">{{ settings.mega_image_caption | escape }}</span>
+            {%- endif -%}
+            {%- if settings.mega_image_link != blank -%}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+    </chosen-mega-menu>
+  </li>
+
+  <script>
+    if (!customElements.get('chosen-mega-menu')) {
+      customElements.define(
+        'chosen-mega-menu',
+        class ChosenMegaMenu extends HTMLElement {
+          constructor() {
+            super();
+            this.trigger = this.querySelector('.chosen-mega__trigger');
+            this.panel = this.querySelector('.chosen-mega__panel');
+            this.backdrop = this.querySelector('.chosen-mega__backdrop');
+            this.closeTimer = null;
+
+            this.open = this.open.bind(this);
+            this.close = this.close.bind(this);
+            this.scheduleClose = this.scheduleClose.bind(this);
+            this.cancelClose = this.cancelClose.bind(this);
+          }
+
+          connectedCallback() {
+            if (!this.trigger || !this.panel) return;
+
+            // Pointer only: touch devices fire a click instead, handled below.
+            this.addEventListener('pointerenter', (event) => {
+              if (event.pointerType === 'touch') return;
+              this.cancelClose();
+              this.open();
+            });
+            this.addEventListener('pointerleave', (event) => {
+              if (event.pointerType === 'touch') return;
+              this.scheduleClose();
+            });
+
+            this.trigger.addEventListener('click', (event) => {
+              event.preventDefault();
+              this.cancelClose();
+              this.isOpen ? this.close() : this.open();
+            });
+
+            this.backdrop.addEventListener('click', this.close);
+
+            document.addEventListener('keydown', (event) => {
+              if (event.key === 'Escape' && this.isOpen) {
+                this.close();
+                this.trigger.focus();
+              }
+            });
+
+            // A dropdown anchored to the header shouldn't hang around while the
+            // page scrolls out from under it.
+            window.addEventListener(
+              'scroll',
+              () => {
+                if (this.isOpen) this.close();
+              },
+              { passive: true }
+            );
+
+            // Leaving the panel with the keyboard should close it too.
+            this.addEventListener('focusout', () => {
+              requestAnimationFrame(() => {
+                if (this.isOpen && !this.contains(document.activeElement)) this.close();
+              });
+            });
+          }
+
+          get isOpen() {
+            return this.trigger.getAttribute('aria-expanded') === 'true';
+          }
+
+          open() {
+            this.panel.removeAttribute('hidden');
+            this.backdrop.removeAttribute('hidden');
+            // The panel goes from display:none straight to visible. Reading a
+            // layout property forces the browser to commit that closed state
+            // first, otherwise it batches both and skips the transition — which
+            // is why the open animation never played.
+            void this.panel.offsetHeight;
+            this.classList.add('chosen-mega--open');
+            this.trigger.setAttribute('aria-expanded', 'true');
+            document.body.classList.add('chosen-mega-open');
+          }
+
+          close() {
+            this.classList.remove('chosen-mega--open');
+            this.trigger.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('chosen-mega-open');
+            var panel = this.panel;
+            var backdrop = this.backdrop;
+            window.setTimeout(function () {
+              if (!document.body.classList.contains('chosen-mega-open')) {
+                panel.setAttribute('hidden', '');
+                backdrop.setAttribute('hidden', '');
+              }
+            }, 280);
+          }
+
+          scheduleClose() {
+            this.cancelClose();
+            this.closeTimer = window.setTimeout(this.close, 180);
+          }
+
+          cancelClose() {
+            if (this.closeTimer) {
+              window.clearTimeout(this.closeTimer);
+              this.closeTimer = null;
+            }
+          }
+        }
+      );
+    }
+  </script>
+{%- endif -%}

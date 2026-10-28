@@ -1,0 +1,189 @@
+/*
+  Chosen Studios — motion layer.
+
+  One easing curve and a small set of durations used everywhere, so the site
+  feels like one piece rather than a collection of unrelated transitions.
+  Expo-out is the curve premium fashion sites tend to use: it leaves fast and
+  settles slowly, which reads as expensive rather than bouncy.
+
+  Everything here is switched off under prefers-reduced-motion at the bottom.
+*/
+
+:root {
+  --chosen-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --chosen-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --chosen-fast: 0.24s;
+  --chosen-base: 0.45s;
+  --chosen-slow: 0.7s;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---------------------------------------------------------
+   Dropdown menu — columns settle in one after another rather
+   than the whole panel appearing at once.
+   --------------------------------------------------------- */
+.chosen-mega__col,
+.chosen-mega__media {
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: opacity var(--chosen-base) var(--chosen-ease), transform var(--chosen-base) var(--chosen-ease);
+}
+
+.chosen-mega--open .chosen-mega__col,
+.chosen-mega--open .chosen-mega__media {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.chosen-mega--open .chosen-mega__col:nth-child(1) {
+  transition-delay: 0.06s;
+}
+.chosen-mega--open .chosen-mega__col:nth-child(2) {
+  transition-delay: 0.11s;
+}
+.chosen-mega--open .chosen-mega__col:nth-child(3) {
+  transition-delay: 0.16s;
+}
+.chosen-mega--open .chosen-mega__col:nth-child(n + 4) {
+  transition-delay: 0.21s;
+}
+.chosen-mega--open .chosen-mega__media {
+  transition-delay: 0.18s;
+}
+
+.chosen-mega__media .chosen-mega__image {
+  transition: transform var(--chosen-slow) var(--chosen-ease);
+}
+
+.chosen-mega__media:hover .chosen-mega__image {
+  transform: scale(1.04);
+}
+
+/* ---------------------------------------------------------
+   Homepage hero and password page — the text rises in once on
+   load, one line after another, like the slide-in on the other
+   pages. Fill mode "both" keeps each line hidden only until its
+   own start, so nothing stays invisible if the animation is cut.
+   --------------------------------------------------------- */
+@keyframes chosenHeroRise {
+  from {
+    opacity: 0;
+    transform: translateY(1.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chosen-split__eyebrow,
+.chosen-split__heading,
+.chosen-split__buttons,
+.chosen-launch__eyebrow,
+.chosen-launch__heading,
+.chosen-launch__text,
+.chosen-launch__newsletter,
+.chosen-launch__socials {
+  animation: chosenHeroRise 0.9s var(--chosen-ease) both;
+}
+
+.chosen-split__eyebrow,
+.chosen-launch__eyebrow {
+  animation-delay: 0.15s;
+}
+.chosen-split__heading,
+.chosen-launch__heading {
+  animation-delay: 0.27s;
+}
+.chosen-split__buttons,
+.chosen-launch__text {
+  animation-delay: 0.42s;
+}
+.chosen-launch__newsletter {
+  animation-delay: 0.54s;
+}
+.chosen-launch__socials {
+  animation-delay: 0.66s;
+}
+
+/* ---------------------------------------------------------
+   Buttons and form controls — one shared curve.
+   --------------------------------------------------------- */
+.button,
+.shopify-challenge__button,
+.customer button,
+.product-form__submit,
+.quick-add__submit {
+  transition: background-color var(--chosen-fast) var(--chosen-ease-soft),
+    color var(--chosen-fast) var(--chosen-ease-soft), opacity var(--chosen-fast) var(--chosen-ease-soft),
+    transform var(--chosen-fast) var(--chosen-ease-soft);
+}
+
+.button:not([disabled]):active,
+.product-form__submit:not([disabled]):active {
+  transform: translateY(0.1rem);
+}
+
+/* Variant swatches and size pills settle rather than snap. */
+.product-form__input--pill label,
+.swatch-input__input + .swatch-input__label {
+  transition: border-color var(--chosen-fast) var(--chosen-ease-soft),
+    background-color var(--chosen-fast) var(--chosen-ease-soft), color var(--chosen-fast) var(--chosen-ease-soft),
+    transform var(--chosen-fast) var(--chosen-ease-soft);
+}
+
+.product-form__input--swatch .swatch-input__input + .swatch-input__label:hover {
+  transform: translateY(-0.2rem);
+}
+
+/* Tabs underline slides rather than blinks. */
+.chosen-tabs__tab {
+  transition: color var(--chosen-fast) var(--chosen-ease-soft), border-color var(--chosen-base) var(--chosen-ease);
+}
+
+/* ---------------------------------------------------------
+   Respect the system setting. Nothing above is load-bearing,
+   so it can all be switched off safely.
+   --------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .chosen-mega__col,
+  .chosen-mega__media,
+  .chosen-mega__image,
+  .button,
+  .product-form__submit,
+  .product-form__input--pill label,
+  .swatch-input__input + .swatch-input__label,
+  .chosen-tabs__tab {
+    transition: none !important;
+    transition-delay: 0s !important;
+  }
+
+  .chosen-mega__media:hover .chosen-mega__image,
+  .product-form__input--swatch .swatch-input__input + .swatch-input__label:hover {
+    transform: none;
+  }
+
+  .chosen-mega__col,
+  .chosen-mega__media {
+    opacity: 1;
+    transform: none;
+  }
+
+  .chosen-split__eyebrow,
+  .chosen-split__heading,
+  .chosen-split__buttons,
+  .chosen-launch__eyebrow,
+  .chosen-launch__heading,
+  .chosen-launch__text,
+  .chosen-launch__newsletter,
+  .chosen-launch__socials {
+    animation: none;
+  }
+}

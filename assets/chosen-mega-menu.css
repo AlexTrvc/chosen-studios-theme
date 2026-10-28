@@ -1,0 +1,237 @@
+/*
+  Chosen Studios — header dropdown menu.
+  Paired with snippets/chosen-mega-menu.liquid.
+
+  Drops down from under the header across the full width, dims and blurs the
+  page behind it, and turns the header opaque while it is open.
+*/
+
+/* The trigger rides inside the header's nav list, so it has to behave like a
+   normal list item — a separate grid child gets pushed onto its own row. */
+.chosen-mega-item {
+  display: none;
+}
+
+.chosen-mega {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media screen and (min-width: 990px) {
+  .chosen-mega-item {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+.chosen-mega__trigger {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: 1.3rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.chosen-mega__trigger span {
+  border-bottom: 0.2rem solid transparent;
+  padding-bottom: 0.2rem;
+  transition: border-color 0.2s ease;
+}
+
+.chosen-mega--open .chosen-mega__trigger span {
+  border-bottom-color: currentColor;
+}
+
+.chosen-mega__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.chosen-mega--open .chosen-mega__backdrop {
+  opacity: 1;
+}
+
+.chosen-mega__panel {
+  position: fixed;
+  top: var(--header-bottom-position, 7.2rem);
+  left: 0;
+  right: 0;
+  z-index: 16;
+  width: 100%;
+  max-height: calc(100vh - var(--header-bottom-position, 7.2rem));
+  overflow-y: auto;
+  background: rgb(var(--color-background));
+  border-top: 0.1rem solid rgba(var(--color-foreground), 0.08);
+  box-shadow: 0 1.6rem 3rem rgba(0, 0, 0, 0.12);
+  transform: translateY(-1.6rem);
+  opacity: 0;
+  transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
+
+.chosen-mega--open .chosen-mega__panel {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.chosen-mega__inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4.8rem;
+  align-items: start;
+  padding: 4rem;
+}
+
+.chosen-mega__inner--no-media {
+  grid-template-columns: 1fr;
+}
+
+/* Link groups sit side by side, the way a header dropdown reads. */
+.chosen-mega__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4.8rem;
+}
+
+.chosen-mega__col {
+  min-width: 16rem;
+}
+
+.chosen-mega__list {
+  margin: 0;
+  padding: 0;
+}
+
+.chosen-mega__eyebrow {
+  margin: 0 0 1.6rem;
+  color: rgba(var(--color-foreground), 0.5);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.chosen-mega__link {
+  display: block;
+  padding: 0.6rem 0;
+  color: rgb(var(--color-foreground));
+  font-size: 1.4rem;
+  font-weight: 400;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.chosen-mega__link:hover {
+  opacity: 0.6;
+}
+
+.chosen-mega__link--primary {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.chosen-mega__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  list-style: none;
+  cursor: pointer;
+}
+
+.chosen-mega__summary::-webkit-details-marker {
+  display: none;
+}
+
+.chosen-mega__chevron {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: 0 0 auto;
+  transition: transform 0.2s ease;
+}
+
+.chosen-mega__details[open] .chosen-mega__chevron {
+  transform: rotate(90deg);
+}
+
+.chosen-mega__sublist {
+  margin: 0 0 0.8rem;
+  padding-left: 1.4rem;
+}
+
+.chosen-mega__link--child {
+  padding: 0.4rem 0;
+  font-size: 1.35rem;
+  color: rgba(var(--color-foreground), 0.72);
+}
+
+.chosen-mega__media {
+  position: relative;
+  width: 32rem;
+  height: 28rem;
+  overflow: hidden;
+  background: rgba(var(--color-foreground), 0.04);
+}
+
+.chosen-mega__media-link {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+}
+
+.chosen-mega__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chosen-mega__caption {
+  position: absolute;
+  left: 2rem;
+  bottom: 2rem;
+  color: rgb(var(--color-background));
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 0.1rem 0.6rem rgba(0, 0, 0, 0.45);
+}
+
+/*
+  While the panel is open the header stops floating over the hero image and
+  takes a solid background.
+*/
+body.chosen-mega-open .shopify-section-group-header-group .header-wrapper,
+body.chosen-mega-open .shopify-section-group-header-group sticky-header,
+body.chosen-mega-open .shopify-section-group-header-group .header {
+  background: rgb(var(--color-background)) !important;
+  background-image: none !important;
+}
+
+body.chosen-mega-open .shopify-section-group-header-group .header-wrapper a,
+body.chosen-mega-open .shopify-section-group-header-group .header-wrapper summary,
+body.chosen-mega-open .shopify-section-group-header-group .header-wrapper button,
+body.chosen-mega-open .shopify-section-group-header-group .header-wrapper span,
+body.chosen-mega-open .shopify-section-group-header-group .header-wrapper svg {
+  color: rgb(var(--color-foreground)) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chosen-mega__panel,
+  .chosen-mega__backdrop,
+  .chosen-mega__chevron {
+    transition: none;
+  }
+}
